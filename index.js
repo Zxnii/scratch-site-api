@@ -201,6 +201,33 @@ class User {
 
             return { body, status, json }
         },
+        commentOnProject: async (content, id, parent_id = "", commentee_id = "") => {
+            const res = await fetch(`https://api.scratch.mit.edu/proxy/comments/project/${id}/`, {
+                headers: {
+                    "x-csrftoken": "a",
+                    "x-requested-with": "XMLHttpRequest",
+                    "Cookie": `scratchcsrftoken=a;scratchsessionsid=${this.session};`,
+                    "origin": "https://scratch.mit.edu/",
+                    "referer": `https://scratch.mit.edu/`,
+                    "x-token": this.token,
+                },
+                body: JSON.stringify({ content, parent_id, commentee_id }),
+                method: "POST"
+            })
+
+            const status = res.status
+            const body = await res.text()
+            let json = {}
+            try {
+                json = JSON.parse(body)
+            } catch (ex) {
+                /*
+                    What are the chances of this happening?
+                */
+            }
+
+            return { body, status, json }
+        }
     }
 }
 
