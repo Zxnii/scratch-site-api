@@ -1,0 +1,20 @@
+{
+  "name": "scratch-site-api",
+  "version": "1.0.0",
+  "description": "A modern site api for scratch.mit.edu",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./tests/apitest.js"
+  },
+  "keywords": [
+    "Scratch",
+    "site-api",
+    "api",
+    "rest"
+  ],
+  "author": "zani (uwv)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  }
+}
