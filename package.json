@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "A modern site api for scratch.mit.edu",
   "main": "index.js",
-  "repository": {"url": "https://github.com/Zxnii/scratch-site-api"},
+  "repository": {
+    "url": "https://github.com/Zxnii/scratch-site-api"
+  },
   "scripts": {
     "test": "node ./tests/apitest.js"
   },
@@ -16,6 +18,7 @@
   "author": "zani (uwv)",
   "license": "UNLICENSED",
   "dependencies": {
+    "form-data": "^3.0.0",
     "node-fetch": "^2.6.1"
   }
 }
