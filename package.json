@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A modern site api for scratch.mit.edu",
   "main": "index.js",
+  "repository": {"url": "https://github.com/Zxnii/scratch-site-api"},
   "scripts": {
     "test": "node ./tests/apitest.js"
   },
