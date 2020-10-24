@@ -1,16 +1,17 @@
 const credentials = require("./credentials.json")
 
-const Scratch = require("../index")
+const Scratch = require("../index"),
+    fs = require("fs"),
+    path = require("path")
 
 const user = new Scratch.User()
 
 const main = async () => {
-    let data = await user.login(credentials.user, credentials.pass)
-    console.log(data.status, data.json)
-    data = await user.comments.commentOnUser("ez claps", "uwv")
-    console.log(data.status, data.json)
-    data = await user.comments.commentOnProject("nodejs test thing irdk", "419248967")
-    console.log(data.status, data.json)
+    await user.login(credentials.user, credentials.pass)
+
+    //sets your icon to the default
+    //all limits still apply (max 500x500, and 10mb limit)
+    await user.profile.setProfilePicture(fs.readFileSync(path.join(__dirname, "default.png")), "image/png")
 }
 
 main()
