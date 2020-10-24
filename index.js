@@ -1,4 +1,5 @@
 const fetch = require("node-fetch")
+const FormData = require("form-data")
 
 class User {
     id = 0
@@ -158,6 +159,38 @@ class User {
                     bio: content
                 }),
                 method: "PUT"
+            })
+
+            const status = res.status
+            const body = await res.text()
+            let json = {}
+            try {
+                json = JSON.parse(body)
+            } catch (ex) {
+                /*
+                    What are the chances of this happening?
+                */
+            }
+
+            return { body, status, json }
+        },
+        setProfilePicture: async (data, mime) => {
+            const form = new FormData()
+
+            form.append("file", data, {
+                contentType: mime,
+                name: "file",
+                filename: "pfp.png"
+            })
+            const res = await fetch(`https://scratch.mit.edu/site-api/users/all/${this.username}/`, {
+                headers: {
+                    "x-csrftoken": "a",
+                    "x-requested-with": "XMLHttpRequest",
+                    "Cookie": `scratchcsrftoken=a;scratchlanguage=en;scratchsessionsid=${this.session};`,
+                    "referer": `https://scratch.mit.edu/users/${this.username}`
+                },
+                body: form,
+                method: "POST"
             })
 
             const status = res.status
