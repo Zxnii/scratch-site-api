@@ -6,6 +6,11 @@ class User {
     token = ""
     session = ""
     username = ""
+    email = ""
+    admin = false
+    joinDate = 0
+    banned = false
+    scratcher = false
 
     constructor() {
 
@@ -39,8 +44,41 @@ class User {
             this.token = json[0].token
             this.id = json[0].id
             this.username = json[0].username
+
+            const sessionData = await (await this.getSession()).json
+
+            this.joinDate = new Date(sessionData.user.dateJoined)
+            this.email = sessionData.user.email
+            this.banned = sessionData.user.email
+            this.admin = sessionData.permissions.admin
+            this.scratcher = sessionData.permissions.scratcher
         }
         return { body, status, json }
+    }
+
+    async getSession() {
+        const res = await fetch(`https://scratch.mit.edu/session/`, {
+            headers: {
+                "x-csrftoken": "a",
+                "x-requested-with": "XMLHttpRequest",
+                "Cookie": `scratchcsrftoken=a;scratchlanguage=en;scratchsessionsid=${this.session};`,
+                "referer": `https://scratch.mit.edu/`
+            },
+            method: "GET"
+        })
+
+        const status = res.status
+            const body = await res.text()
+            let json = {}
+            try {
+                json = JSON.parse(body)
+            } catch (ex) {
+                /*
+                    What are the chances of this happening?
+                */
+            }
+
+            return { body, status, json }
     }
 
     messages = {
@@ -261,6 +299,12 @@ class User {
 
             return { body, status, json }
         }
+    }
+}
+
+class CloudSession {
+    constructor(user) {
+
     }
 }
 
