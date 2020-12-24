@@ -1,6 +1,6 @@
 {
   "name": "scratch-site-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A modern site api for scratch.mit.edu",
   "main": "index.js",
   "repository": {
