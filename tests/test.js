@@ -11,6 +11,8 @@ const main = async () => {
 
     if (session.status != 200) {
         throw new Error("Something is broken!")
+    } else {
+        console.log(session.json)
     }
 }
 

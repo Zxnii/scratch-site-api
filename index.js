@@ -39,33 +39,35 @@ class User {
             body: JSON.stringify({ username, password, useMessages: true }),
             method: "POST"
         })
-        const session = res.headers.get("set-cookie").match(/\"(.*)\"/g)[0]
-        const status = res.status
-        const body = await res.text()
-        let json = {}
-        try {
-            json = JSON.parse(body)
-        } catch (ex) {
-            /*
-                What are the chances of this happening?
-            */
-        }
+        if (res.status == 200) {
+            const session = res.headers.get("set-cookie").match(/\"(.*)\"/g)[0]
+            const status = res.status
+            const body = await res.text()
+            let json = {}
+            try {
+                json = JSON.parse(body)
+            } catch (ex) {
+                /*
+                    What are the chances of this happening?
+                */
+            }
 
-        if (res.ok && json[0].success == 1) {
-            this.session = session
-            this.token = json[0].token
-            this.id = json[0].id
-            this.username = json[0].username
+            if (res.ok && json[0].success == 1) {
+                this.session = session
+                this.token = json[0].token
+                this.id = json[0].id
+                this.username = json[0].username
 
-            const sessionData = await this.getSession().json
+                const sessionData = await (await this.getSession()).json
 
-            this.joinDate = new Date(sessionData.user.dateJoined)
-            this.email = sessionData.user.email
-            this.banned = sessionData.user.email
-            this.admin = sessionData.permissions.admin
-            this.scratcher = sessionData.permissions.scratcher
-        }
-        return { body, status, json }
+                this.joinDate = new Date(sessionData.user.dateJoined)
+                this.email = sessionData.user.email
+                this.banned = sessionData.user.email
+                this.admin = sessionData.permissions.admin
+                this.scratcher = sessionData.permissions.scratcher
+            }
+            return { body, status, json }
+        } else throw new Error("Something went wrong while logging in")
     }
 
     /**
