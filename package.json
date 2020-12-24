@@ -7,7 +7,7 @@
     "url": "https://github.com/Zxnii/scratch-site-api"
   },
   "scripts": {
-    "test": "node ./tests/apitest.js"
+    "test": "node ./tests/test.js"
   },
   "keywords": [
     "Scratch",
