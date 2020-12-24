@@ -5,6 +5,9 @@ const fetch = require("node-fetch"),
     FormData = require("form-data"),
     WebSocket = require("ws")
 
+/**
+ * Class with methods for user operations (Commenting, changing account settings, etc..)
+ */
 class User {
     id = 0
     token = ""
@@ -20,6 +23,11 @@ class User {
 
     }
 
+    /**
+     * Login with a username and password
+     * @param {String} username 
+     * @param {String} password 
+     */
     async login(username, password) {
         const res = await fetch("https://scratch.mit.edu/login/", {
             headers: {
@@ -60,6 +68,9 @@ class User {
         return { body, status, json }
     }
 
+    /**
+     * Sign out and invalidate current session
+     */
     async signOut() {
         if (this.session.length > 0) {
             const form = new FormData()
@@ -94,6 +105,9 @@ class User {
         }
     }
 
+    /**
+     * Get information about session, such as email
+     */
     async getSession() {
         if (this.session.length > 0) {
             const res = await fetch(`https://scratch.mit.edu/session/`, {
@@ -121,6 +135,10 @@ class User {
         }
     }
 
+    /**
+     * Change account country
+     * @param {String} country 
+     */
     async changeCountry(country) {
         if (this.session.length > 0) {
             const form = new FormData()
@@ -146,6 +164,11 @@ class User {
         }
     }
 
+    /**
+     * Change account password
+     * @param {String} oldPassword 
+     * @param {String} newPassword 
+     */
     async changePassword(oldPassword, newPassword) {
         if (this.session.length > 0) {
             const form = new FormData()
@@ -173,6 +196,11 @@ class User {
         }
     }
 
+    /**
+     * Change account email
+     * @param {String} email 
+     * @param {String} password 
+     */
     async changeEmail(email, password) {
         if (this.session.length > 0) {
             const form = new FormData()
@@ -200,6 +228,11 @@ class User {
     }
 
     messages = {
+        /**
+         * Get account messages
+         * @param {Number} offset 
+         * @param {Number} limit 
+         */
         getMessages: async (offset, limit) => {
             if (this.session.length > 0) {
                 const res = await fetch(`https://api.scratch.mit.edu/users/${this.username}/messages?limit=${limit}&offset=${offset}`, {
@@ -226,6 +259,9 @@ class User {
                 return { body, status, json }
             }
         },
+        /**
+         * Get message count
+         */
         getCount: async () => {
             if (this.session.length > 0) {
                 const res = await fetch(`https://api.scratch.mit.edu/users/${this.username}/messages/count/`, {
@@ -250,6 +286,9 @@ class User {
     }
 
     profile = {
+        /**
+         * Toggle comments on profile
+         */
         toggleComments: async () => {
             if (this.session.length > 0) {
                 const res = await fetch(`https://scratch.mit.edu/site-api/comments/user/${this.username}/toggle-comments/`, {
@@ -276,6 +315,10 @@ class User {
                 return { body, status, json }
             }
         },
+        /**
+         * Set contents of user's WIWO
+         * @param {String} content 
+         */
         setStatus: async (content) => {
             if (this.session.length > 0) {
                 const res = await fetch(`https://scratch.mit.edu/site-api/users/all/${this.username}/`, {
@@ -308,6 +351,10 @@ class User {
                 return { body, status, json }
             }
         },
+        /**
+         * Set contents of user's bio
+         * @param {String} content 
+         */
         setBio: async (content) => {
             if (this.session.length > 0) {
                 const res = await fetch(`https://scratch.mit.edu/site-api/users/all/${this.username}/`, {
@@ -340,6 +387,11 @@ class User {
                 return { body, status, json }
             }
         },
+        /**
+         * Set a user's profile picture
+         * @param {Buffer} data 
+         * @param {String} mime 
+         */
         setProfilePicture: async (data, mime) => {
             if (this.session.length > 0) {
                 const form = new FormData()
@@ -377,6 +429,13 @@ class User {
     }
 
     comments = {
+        /**
+         * Comment on a user's profile. Note: `parent_id` & `commentee_id` are required for replying
+         * @param {String} content 
+         * @param {String} user 
+         * @param {String} parent_id 
+         * @param {String} commentee_id 
+         */
         commentOnUser: async (content, user, parent_id = "", commentee_id = "") => {
             if (this.session.length > 0) {
                 const res = await fetch(`https://scratch.mit.edu/site-api/comments/user/${user}/add/`, {
@@ -404,6 +463,13 @@ class User {
                 return { body, status, json }
             }
         },
+        /**
+         * WIP
+         * @param {String} content 
+         * @param {String} id 
+         * @param {String} parent_id 
+         * @param {String} commentee_id 
+         */
         commentOnProject: async (content, id, parent_id = "", commentee_id = "") => {
             if (this.session.length > 0) {
                 const res = await fetch(`https://api.scratch.mit.edu/proxy/comments/project/${id}/`, {
@@ -436,6 +502,10 @@ class User {
     }
 
     cloud = {
+        /**
+         * Create a cloud session with a project (WIP)
+         * @param {Number} project_id 
+         */
         createSession(project_id) {
             if (this.session.length > 0)
                 return new CloudSession(this, project_id)
