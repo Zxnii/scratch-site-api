@@ -28,7 +28,7 @@ class User {
      * @param {String} username 
      * @param {String} password 
      */
-    async login(username, password) {
+    login = async (username, password) => {
         const res = await fetch("https://scratch.mit.edu/login/", {
             headers: {
                 "x-csrftoken": "a",
@@ -73,7 +73,7 @@ class User {
     /**
      * Sign out and invalidate current session
      */
-    async signOut() {
+    signOut = async () => {
         if (this.session.length > 0) {
             const form = new FormData()
 
@@ -110,7 +110,7 @@ class User {
     /**
      * Get information about session, such as email
      */
-    async getSession() {
+    getSession = async () => {
         if (this.session.length > 0) {
             const res = await fetch(`https://scratch.mit.edu/session/`, {
                 headers: {
@@ -141,7 +141,7 @@ class User {
      * Change account country
      * @param {String} country 
      */
-    async changeCountry(country) {
+    changeCountry = async (country) => {
         if (this.session.length > 0) {
             const form = new FormData()
 
@@ -171,7 +171,7 @@ class User {
      * @param {String} oldPassword 
      * @param {String} newPassword 
      */
-    async changePassword(oldPassword, newPassword) {
+    changePassword = async (oldPassword, newPassword) => {
         if (this.session.length > 0) {
             const form = new FormData()
 
@@ -203,7 +203,7 @@ class User {
      * @param {String} email 
      * @param {String} password 
      */
-    async changeEmail(email, password) {
+    changeEmail = async (email, password) => {
         if (this.session.length > 0) {
             const form = new FormData()
 
@@ -505,45 +505,40 @@ class User {
 
     cloud = {
         /**
-         * Create a cloud session with a project (WIP)
-         * @param {Number} project_id 
+         * Create a cloud session with a project
+         * @param {Number} project_id
+         * @returns {CloudSession}
          */
-        createSession(project_id) {
+        createSession: (project_id) => {
             if (this.session.length > 0)
                 return new CloudSession(this, project_id)
         }
     }
 }
 
+/**
+ * Class containing methods for working with cloud
+ */
 class CloudSession extends EventEmitter {
-    constructor(user, project_id) {
+    /**
+     * Create a cloud session with optional custom server
+     * @param {User} user 
+     * @param {Number} project_id 
+     * @param {String} server
+     */
+    constructor(user, project_id, server = "clouddata.scratch.mit.edu") {
         super()
         this.session = user.session
+        this.server = server
         this.username = user.username
         this.id = project_id
+        this.variables = new Map()
         this._attemptedPackets = []
         this._connect()
-        this._connection.on("open", () => {
-            this.emit("open")
-        })
-    }
-
-    _connect() {
-        this._connection = new WebSocket("wss://clouddata.scratch.mit.edu/", {
-            headers: {
-                "Cookie": `scratchsessionsid=${this.session};`,
-                "origin": "https://scratch.mit.edu"
-            }
-        })
+        let stream = ""
         this._connection.on("open", () => {
             this._performHandshake()
-            for (const packet of this._attemptedPackets) {
-                this._sendPacket(packet)
-            }
-            this._attemptedPackets = []
         })
-
-        let stream = ""
         this._connection.on("message", (chunk) => {
             stream += chunk
             const packets = stream.split("\n")
@@ -551,7 +546,7 @@ class CloudSession extends EventEmitter {
                 try {
                     this._handlePacket(JSON.parse(packet))
                 } catch (err) {
-                    console.warn(`Invalid packet ${packet}`)
+                    
                 }
             }
         })
@@ -560,17 +555,68 @@ class CloudSession extends EventEmitter {
         })
     }
 
-    _handlePacket(packet) {
+
+    /**
+     * Return a cloud variable with name, make sure to include the cloud icon (☁)!
+     * @param {String} name 
+     * @returns {String}
+     */
+    get = (name) => {
+        return this.variables.get(name)
+    }
+
+    /**
+     * Sets a cloud variable with name and value (value can only be numbers for the official cloud server), make sure to include the cloud icon (☁)!
+     * @param {String} name 
+     * @param {String|Number} value 
+     */
+    set = (name, value) => {
+        this.variables.set(name, value.toString())
+        this._send("set", {name, value: value.toString()})
+    }
+
+    /**
+     * Internal function, connect to the cloud server
+     */
+    _connect = () => {
+        if (this.server == "clouddata.scratch.mit.edu") {
+            this._connection = new WebSocket("wss://clouddata.scratch.mit.edu/", {
+                headers: {
+                    "Cookie": `scratchsessionsid=${this.session};`,
+                    "origin": "https://scratch.mit.edu"
+                }
+            })
+        } else {
+            this._connection = new WebSocket(`wss://${this.server}/`, {
+                headers: {
+
+                }
+            })
+        }
+    }
+
+    /**
+     * Internal function, handle a packet
+     * @param {Object} packet 
+     */
+    _handlePacket = (packet) => {
         this.emit("packet", packet)
         switch (packet.method) {
             case "set":
                 this.emit("set", packet.name, packet.value)
+                this.variables.set(packet.name, packet.value)
+                break
             default:
                 console.warn(`Method not implemented ${packet.method}, if you think this is a meant to be implemented create an issue at https://github.com/Zxnii/scratch-site-api/issues`)
         }
     }
 
-    _send(method, data) {
+    /**
+     * Internal function, send a packet
+     * @param {String} method 
+     * @param {Object} data 
+     */
+    _send = (method, data) => {
         const packet = {
             method,
             user: this.username,
@@ -580,17 +626,24 @@ class CloudSession extends EventEmitter {
             packet[key] = data[key]
         }
         if (this._connection.readyState == WebSocket.OPEN)
-            this._sendPacket(JSON.stringify(packet))
+            this._sendPacket(`${JSON.stringify(packet)}\n`)
         else
-            this._attemptedPackets.push(JSON.stringify(packet))
+            this._attemptedPackets.push(`${JSON.stringify(packet)}\n`)
         this.emit("outgoing", packet)
     }
 
-    _sendPacket(packet) {
+    /**
+     * Internal function, send a serialized packet, use `_send` instead
+     * @param {String} packet 
+     */
+    _sendPacket = (packet) => {
         this._connection.send(packet)
     }
 
-    _performHandshake() {
+    /**
+     * Internal function, send a handshake packet, should be used after connecting to the server
+     */
+    _performHandshake = () => {
         this.emit("handshake")
         this._send("handshake", {})
     }
