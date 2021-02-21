@@ -66,8 +66,14 @@ class User {
                 this.admin = sessionData.permissions.admin
                 this.scratcher = sessionData.permissions.scratcher
             }
-            return { body, status, json }
+            json["body"] = body
+            json["status"] = status
+            return json
         } else throw new Error("Something went wrong while logging in")
+    }
+
+    getCSRFToken = async () => {
+
     }
 
     /**
@@ -133,7 +139,9 @@ class User {
                 */
             }
 
-            return { body, status, json }
+            json["body"] = body
+            json["status"] = status
+            return json
         }
     }
 
@@ -235,14 +243,14 @@ class User {
          * @param {Number} offset 
          * @param {Number} limit 
          */
-        getMessages: async (offset, limit) => {
+        getMessages: async (offset = 0, limit = 40) => {
             if (this.session.length > 0) {
                 const res = await fetch(`https://api.scratch.mit.edu/users/${this.username}/messages?limit=${limit}&offset=${offset}`, {
                     headers: {
                         "x-requested-with": "XMLHttpRequest",
-                        "origin": "https://scratch.mit.edu/",
+                        "origin": "https://scratch.mit.edu",
                         "referer": `https://scratch.mit.edu/`,
-                        "x-token": this.token
+                        "x-token": this.token,
                     },
                     method: "GET"
                 })
@@ -258,7 +266,9 @@ class User {
                     */
                 }
 
-                return { body, status, json }
+                json["body"] = body
+                json["status"] = status
+                return json
             }
         },
         /**
@@ -282,7 +292,9 @@ class User {
 
                 }
 
-                return { body, status, json }
+                json["body"] = body
+                json["status"] = status
+                return json
             }
         }
     }
@@ -314,7 +326,9 @@ class User {
                     */
                 }
 
-                return { body, status, json }
+                json["body"] = body
+                json["status"] = status
+                return json
             }
         },
         /**
@@ -350,7 +364,9 @@ class User {
                     */
                 }
 
-                return { body, status, json }
+                json["body"] = body
+                json["status"] = status
+                return json
             }
         },
         /**
@@ -386,7 +402,9 @@ class User {
                     */
                 }
 
-                return { body, status, json }
+                json["body"] = body
+                json["status"] = status
+                return json
             }
         },
         /**
@@ -425,7 +443,9 @@ class User {
                     */
                 }
 
-                return { body, status, json }
+                json["body"] = body
+                json["status"] = status
+                return json
             }
         }
     }
@@ -462,7 +482,9 @@ class User {
                     */
                 }
 
-                return { body, status, json }
+                json["body"] = body
+                json["status"] = status
+                return json
             }
         },
         /**
@@ -474,12 +496,11 @@ class User {
          */
         commentOnProject: async (content, id, parent_id = "", commentee_id = "") => {
             if (this.session.length > 0) {
-                const res = await fetch(`https://api.scratch.mit.edu/proxy/comments/project/${id}/`, {
+                const res = await fetch(`https://api.scratch.mit.edu/proxy/comments/project/${id}`, {
                     headers: {
                         "x-csrftoken": "a",
-                        "x-requested-with": "XMLHttpRequest",
                         "Cookie": `scratchcsrftoken=a;scratchsessionsid=${this.session};`,
-                        "origin": "https://scratch.mit.edu/",
+                        "origin": "https://scratch.mit.edu",
                         "referer": `https://scratch.mit.edu/`,
                         "x-token": this.token,
                     },
@@ -498,7 +519,9 @@ class User {
                     */
                 }
 
-                return { body, status, json }
+                json["body"] = body
+                json["status"] = status
+                return json
             }
         }
     }
@@ -546,7 +569,7 @@ class CloudSession extends EventEmitter {
                 try {
                     this._handlePacket(JSON.parse(packet))
                 } catch (err) {
-                    
+
                 }
             }
         })
@@ -572,7 +595,7 @@ class CloudSession extends EventEmitter {
      */
     set = (name, value) => {
         this.variables.set(name, value.toString())
-        this._send("set", {name, value: value.toString()})
+        this._send("set", { name, value: value.toString() })
     }
 
     /**
