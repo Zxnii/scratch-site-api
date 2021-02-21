@@ -58,7 +58,7 @@ class User {
                 this.id = json[0].id
                 this.username = json[0].username
 
-                const sessionData = await (await this.getSession()).json
+                const sessionData = await this.getSession()
 
                 this.joinDate = new Date(sessionData.user.dateJoined)
                 this.email = sessionData.user.email
