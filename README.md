@@ -1,5 +1,9 @@
 # scratch-site-api
 
+## NOTICE
+
+This has been deprecated, and will not be supported anytime in the future. If you're looking for a similar library use [**meowclient**](https://github.com/webdev03/meowclient) instead.
+
 scratch-site-api is a full library for working with the Scratch website with Node.JS
 
 ## Classes
